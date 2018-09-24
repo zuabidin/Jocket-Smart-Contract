@@ -1,4 +1,4 @@
-# Jocket-Smart-Contract
+# Jockey Smart Contract
 Random Number Generator on Blockchain
 
 This is a Smart Contract written in Solidity which tackles the problem of generating a random number on Blockchain. Out of various approaches it uses the approach below:
