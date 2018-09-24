@@ -1,0 +1,64 @@
+//Just a test contract
+
+//Using the aprroach mentioned below
+
+/**
+ * Blockhash of a future block
+ * A better approach is to use the blockhash of some future block. The implementation scenario is as follows:
+ * 1. The player makes a bet and the house stores the block.number of the transaction.
+ * 2. In a second call to the contract, the player requests that the house announces the winning number.
+ * 3. The house retrieves the saved block.number from storage and gets its blockhash, which is then used to generate a pseudo-random number.
+*/
+
+pragma solidity ^0.4.21;
+
+contract Jockey {
+
+    uint blockNumber; //to store the block number of bet transaction
+    address owner;  
+    uint8 winningNumber; //the random winning number generated
+    uint8 chosenNumber; //the number chosen by the user
+    
+    function Jockey() public {
+        owner = msg.sender;
+        state = JockeyState.Accepting;
+    }
+    
+    enum JockeyState {Accepting, Finished}
+    
+    JockeyState state; 
+    
+    //get the user bet and number
+    function enterNumber(uint8 number) public payable {
+        require(msg.value > .001 ether);
+        require(number<=4);
+        chosenNumber = number;
+        require(state == JockeyState.Accepting);
+        blockNumber = block.number;
+    }
+    
+    //second call to determine the winner
+    function determineWin() public {
+        require(msg.sender == owner);
+        
+        /**
+         * If a second call was not made within 256 blocks 
+         * and there is no validation of the blockhash, the 
+         * pseudo-random number will be known beforehand i.e 
+         * the blockhash will be zero.
+         */
+        require(blockNumber > block.number - 256); 
+        
+        state = JockeyState.Finished;
+        random();
+        if (chosenNumber == winningNumber){
+            //win
+        }
+        state = JockeyState.Accepting;
+    }
+    
+    function random() private {
+        winningNumber = uint8(uint256(block.blockhash(blockNumber))%4)+1;
+    }
+
+}
